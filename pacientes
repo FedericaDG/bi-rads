@@ -1,0 +1,59 @@
+import streamlit as st
+
+st.title("Asistente para estudios mamarios")
+
+st.markdown("### Bienvenida")
+edad = st.number_input("¿Cuántos años tenés?", min_value=15, max_value=100, step=1)
+
+st.markdown("### Antecedentes familiares")
+riesgo = st.radio(
+    "¿Tenés familiares directos con cáncer de mama? (madre, hermana, hija, abuela < 60)",
+    ("Sí", "No")
+)
+
+st.markdown("### Prótesis mamarias")
+protesis = st.radio("¿Tenés prótesis mamarias?", ("Sí", "No"))
+
+if edad:
+    estudios = []
+    if edad < 35:
+        estudios.append("ecografía mamaria")
+        if protesis == "Sí":
+            estudios.append("resonancia magnética")
+    elif 35 <= edad < 40:
+        estudios.extend(["ecografía", "mamografía si hay antecedentes"])
+    elif edad >= 40:
+        estudios.extend(["mamografía", "ecografía"])
+
+    if riesgo == "Sí" and edad >= 30:
+        estudios.append("mamografía anual desde los 30 años")
+
+    st.markdown("### Estudios sugeridos:")
+    for e in estudios:
+        st.write(f"- {e.capitalize()}")
+
+    st.markdown("### Resultados de estudios (opcional)")
+    birads_eco = st.selectbox("BIRADS de la ecografía", ["", "1", "2", "3", "4a", "4b", "4c", "5", "6", "0"])
+    birads_mx = st.selectbox("BIRADS de la mamografía", ["", "1", "2", "3", "4a", "4b", "4c", "5", "6", "0"])
+    birads_rm = st.selectbox("BIRADS de la resonancia magnética", ["", "1", "2", "3", "4a", "4b", "4c", "5", "6", "0"])
+
+    prioridad = None
+    for val in ["6", "5", "4c", "4b", "4a", "4", "3", "2", "1", "0"]:
+        if val in (birads_eco, birads_mx, birads_rm):
+            prioridad = val
+            break
+
+    if prioridad:
+        st.markdown("### Recomendación final")
+        if prioridad == "0":
+            st.warning("Estudio no concluyente, se sugieren estudios complementarios.")
+        elif prioridad in ["4", "4a", "4b", "4c", "5", "6"]:
+            st.error(f"BIRADS {prioridad}: seguí las recomendaciones médicas específicas.")
+        else:
+            st.success(f"BIRADS {prioridad}: seguimiento habitual según indicación médica.")
+
+    st.markdown("---")
+    st.info("No te olvides del autoexamen mensual. ¿Sabés cómo hacerlo?")
+    if st.button("Ver cómo hacer el autoexamen"):
+        st.video("https://www.youtube.com/watch?v=Ow7TwR1HtkA")  # Podés poner uno que elijas
+
